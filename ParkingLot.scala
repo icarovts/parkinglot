@@ -49,7 +49,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	def act() = {
 
 		loop {
-			react {
+			receive {
 				case driver: Driver if (driver.ticket == null) => generateTicket(driver)
 				case driver: Driver if (driver.ticket != null) => receiveDriver(driver)
 				case parkingspace: ParkingSpace if(parkingspace.driver != null && !parkingspace.driver.ticket.isPayed) => confirmParking(parkingspace)
