@@ -21,7 +21,7 @@ object ParkingSimulator {
 			val driver = new Driver(i,parkinglot)
 			driver.start()			
 			driver :: drivers
-			Thread.sleep(10000)
+			Thread.sleep(1000)
 		}
 
 		System.exit(0)

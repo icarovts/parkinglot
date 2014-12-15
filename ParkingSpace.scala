@@ -12,7 +12,7 @@ class ParkingSpace(val name: String) extends Actor {
   def act() = {
     loop {
       react {
-        case driver: Driver => this.driver = driver//; println("[PS] parkingSpace [" + this.name+ "] was occupied by the driver [" + this.driver.id + "] ")
+        case driver: Driver =>  this.driver = driver
         case _ => this.driver = null
       }
     }
