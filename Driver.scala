@@ -46,7 +46,7 @@ class Driver(val id: Int, val parkinglot: ParkingLot) extends Actor{
 
 	def payTickect(){
 		Thread.sleep(random.nextInt(1000))
-		ticket.pay()w
+		ticket.pay()
 		println("[D] Driver ["+ this.id + "] payed the ticket !")		
 		Thread.sleep(random.nextInt(1000))				
 	}
