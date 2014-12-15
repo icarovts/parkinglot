@@ -15,8 +15,8 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	parkingSpaces.map(ps => ps.start())
 
 
-	 def receiveDriver(driver: Driver) = synchronized {
-		if(emptyParkingSpaces.isEmpty || emptyParkingSpaces.head == null){
+	def receiveDriver(driver: Driver){
+		if(emptyParkingSpaces.isEmpty){
 			println("[PL] No free ParkingSpace was found for the driver [" + driver.id + "]. His ticket was canceled !")
 			driver ! null
 		}
@@ -30,7 +30,6 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 		println("[PL] Genereting ticket for the driver [" + driver.id + "]")
 		Thread.sleep(random.nextInt(1000))
 		val ticket = new Ticket();
-		ticket.start()
 		Thread.sleep(random.nextInt(1000))
 		driver ! ticket
 	}
@@ -39,24 +38,23 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 		println("[PL] Driver [" + parkingspace.driver.id + "] confirmed that it's parked at ParkingSpace [" + parkingspace.name + "]")		
 	}
 
-	def freeParkingSpace(parkingspace: ParkingSpace) = synchronized {		
+	def freeParkingSpace(parkingspace: ParkingSpace){		
 		println("[PL] Driver [" + parkingspace.driver.id + "] leaved the ParkingSpace [" + parkingspace.name + "]")			
 		parkingspace.driver = null
 	}
 
-	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty) 
+	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty)
 	def occupiedParkingSpaces: List[ParkingSpace] = parkingSpaces.filterNot(ps => ps.isEmpty)
 	def parkedDrivers: List[Driver] = occupiedParkingSpaces.map(ps => ps.driver)
-	def checkIfIsPayed(parkingspace: ParkingSpace): Boolean = synchronized { parkingspace.driver.ticket.isPayed } 
 
 	def act() = {
 
 		loop {
 			react {
 				case driver: Driver if (driver.ticket == null) => generateTicket(driver)
-				case driver: Driver if (driver.ticket != null) => receiveDriver(driver) 
-				case parkingspace: ParkingSpace if(! checkIfIsPayed(parkingspace) ) => confirmParking(parkingspace)
-				case parkingspace: ParkingSpace if( checkIfIsPayed(parkingspace) ) => freeParkingSpace(parkingspace)
+				case driver: Driver if (driver.ticket != null) => receiveDriver(driver)
+				case parkingspace: ParkingSpace if(!parkingspace.driver.ticket.isPayed) => confirmParking(parkingspace)
+				case parkingspace: ParkingSpace if(parkingspace.driver.ticket.isPayed) => freeParkingSpace(parkingspace)
 			}
 		}
 

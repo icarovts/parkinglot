@@ -16,7 +16,7 @@ object ParkingSimulator {
 		parkinglot.start()		
 		println("[!] Generating drivers for the simulation")
 
-		while(true){
+		loop {
 			i = i + 1
 			val driver = new Driver(i,parkinglot)
 			driver.start()			
