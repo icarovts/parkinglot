@@ -15,8 +15,8 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	parkingSpaces.map(ps => ps.start())
 
 
-	def receiveDriver(driver: Driver){
-		if(emptyParkingSpaces.isEmpty){
+	def receiveDriver(driver: Driver) = synchronized {
+		if(emptyParkingSpaces.isEmpty || emptyParkingSpaces.head == null){
 			println("[PL] No free ParkingSpace was found for the driver [" + driver.id + "]. His ticket was canceled !")
 			driver ! null
 		}
@@ -38,7 +38,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 		println("[PL] Driver [" + parkingspace.driver.id + "] confirmed that it's parked at ParkingSpace [" + parkingspace.name + "]")		
 	}
 
-	def freeParkingSpace(parkingspace: ParkingSpace){		
+	def freeParkingSpace(parkingspace: ParkingSpace) = synchronized {		
 		println("[PL] Driver [" + parkingspace.driver.id + "] leaved the ParkingSpace [" + parkingspace.name + "]")			
 		parkingspace.driver = null
 	}
@@ -46,6 +46,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty)
 	def occupiedParkingSpaces: List[ParkingSpace] = parkingSpaces.filterNot(ps => ps.isEmpty)
 	def parkedDrivers: List[Driver] = occupiedParkingSpaces.map(ps => ps.driver)
+	def checkIfIsPayed(parkingspace: ParkingSpace): Boolean = synchronized { parkingspace.driver.ticket.isPayed } 
 
 	def act() = {
 
@@ -53,7 +54,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 			react {
 				case driver: Driver if (driver.ticket == null) => generateTicket(driver)
 				case driver: Driver if (driver.ticket != null) => receiveDriver(driver)
-				case parkingspace: ParkingSpace if(!parkingspace.driver.ticket.isPayed) => confirmParking(parkingspace)
+				case parkingspace: ParkingSpace if(! checkIfIsPayed(parkingspace) ) => confirmParking(parkingspace)
 				case parkingspace: ParkingSpace if(parkingspace.driver.ticket.isPayed) => freeParkingSpace(parkingspace)
 			}
 		}
