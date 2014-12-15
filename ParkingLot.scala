@@ -40,7 +40,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 
 	def freeParkingSpace(parkingspace: ParkingSpace) = synchronized {		
 		println("[PL] Driver [" + parkingspace.driver.id + "] leaved the ParkingSpace [" + parkingspace.name + "]")			
-		parkingspace.driver = null
+		parkingspace ! false
 	}
 
 	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty)
