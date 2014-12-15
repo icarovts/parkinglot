@@ -12,7 +12,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 
 	val parkingSpaces = for(i <- (1 to numberSpaces).toList) yield new ParkingSpace("V" + i)
 
-	parkingSpaces.map(ps => ps.start())
+	parkingSpaces.foreach(ps => ps.start())
 
 
 	def receiveDriver(driver: Driver) = synchronized {
@@ -21,7 +21,6 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 			driver ! null
 		}
 		else {
-			Thread.sleep(random.nextInt(1000))
 			driver ! emptyParkingSpaces.head
 		}
 	}
@@ -46,7 +45,6 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty)
 	def occupiedParkingSpaces: List[ParkingSpace] = parkingSpaces.filterNot(ps => ps.isEmpty)
 	def parkedDrivers: List[Driver] = occupiedParkingSpaces.map(ps => ps.driver)
-	def checkIfIsPayed(parkingspace: ParkingSpace): Boolean = synchronized { parkingspace.driver.ticket.isPayed } 
 
 	def act() = {
 
@@ -54,8 +52,8 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 			react {
 				case driver: Driver if (driver.ticket == null) => generateTicket(driver)
 				case driver: Driver if (driver.ticket != null) => receiveDriver(driver)
-				case parkingspace: ParkingSpace if(! checkIfIsPayed(parkingspace) ) => confirmParking(parkingspace)
-				case parkingspace: ParkingSpace if(parkingspace.driver.ticket.isPayed) => freeParkingSpace(parkingspace)
+				case parkingspace: ParkingSpace if(parkingspace.driver != null && !parkingspace.driver.ticket.isPayed) => confirmParking(parkingspace)
+				case parkingspace: ParkingSpace if(parkingspace.driver != null && parkingspace.driver.ticket.isPayed) => freeParkingSpace(parkingspace)
 			}
 		}
 
