@@ -39,7 +39,7 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 
 	def freeParkingSpace(parkingspace: ParkingSpace) = synchronized {		
 		println("[PL] Driver [" + parkingspace.driver.id + "] leaved the ParkingSpace [" + parkingspace.name + "]")			
-		parkingspace ! false
+		parkingspace.driver = null
 	}
 
 	def emptyParkingSpaces: List[ParkingSpace] = parkingSpaces.filter(ps => ps.isEmpty)
@@ -49,11 +49,12 @@ class ParkingLot(numberSpaces: Int) extends Actor {
 	def act() = {
 
 		loop {
-			receive {
+			react {
 				case driver: Driver if (driver.ticket == null) => generateTicket(driver)
 				case driver: Driver if (driver.ticket != null) => receiveDriver(driver)
 				case parkingspace: ParkingSpace if(parkingspace.driver != null && !parkingspace.driver.ticket.isPayed) => confirmParking(parkingspace)
 				case parkingspace: ParkingSpace if(parkingspace.driver != null && parkingspace.driver.ticket.isPayed) => freeParkingSpace(parkingspace)
+				case _ => null
 			}
 		}
 
